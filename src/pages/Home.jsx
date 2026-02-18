@@ -1,23 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import { Plus, Users, ArrowLeft, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useLocalUser } from "../components/useLocalUser";
 
 export default function Home() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {
-      base44.auth.redirectToLogin();
-    });
-  }, []);
+  const { user } = useLocalUser();
 
   const { data: memberships = [] } = useQuery({
-    queryKey: ["memberships", user?.email],
-    queryFn: () => base44.entities.GroupMembership.filter({ user_email: user.email }),
+    queryKey: ["memberships", user?.phone],
+    queryFn: () => base44.entities.GroupMembership.filter({ user_email: user.phone }),
     enabled: !!user,
   });
 
