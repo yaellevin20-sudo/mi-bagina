@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Users, ArrowLeft } from "lucide-react";
+import { Plus, Users, ArrowLeft, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
