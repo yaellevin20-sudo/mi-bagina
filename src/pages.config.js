@@ -47,8 +47,26 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Home from './pages/Home';
+import GroupView from './pages/GroupView';
+import ManageChildren from './pages/ManageChildren';
+import CreateGroup from './pages/CreateGroup';
+import JoinGroup from './pages/JoinGroup';
+import MyGroups from './pages/MyGroups';
+import __Layout from './Layout.jsx';
 
-export const pagesConfig = {
-	Pages: {}
+
+export const PAGES = {
+    "Home": Home,
+    "GroupView": GroupView,
+    "ManageChildren": ManageChildren,
+    "CreateGroup": CreateGroup,
+    "JoinGroup": JoinGroup,
+    "MyGroups": MyGroups,
 }
 
+export const pagesConfig = {
+    mainPage: "Home",
+    Pages: PAGES,
+    Layout: __Layout,
+};
