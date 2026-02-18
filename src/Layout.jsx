@@ -17,6 +17,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "הבית", page: "Home", icon: Home },
     { name: "הקבוצות שלי", page: "MyGroups", icon: Users },
     { name: "הילדים שלי", page: "ManageChildren", icon: Baby },
+    { name: "הפרופיל שלי", page: "Profile", icon: User },
   ];
 
   return (
