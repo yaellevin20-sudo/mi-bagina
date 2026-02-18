@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { resolvePlaygroundName } from "./playgroundNormalizer";
 import { MapPin, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,11 +45,13 @@ export default function SignalPresenceDialog({ open, onOpenChange, groupId, user
 
     const selectedChildData = children.filter((c) => selectedChildren.includes(c.id));
 
+    const canonicalName = await resolvePlaygroundName(playgroundName.trim(), groupId, base44.entities);
+
     await base44.entities.PlaygroundVisit.create({
       group_id: groupId,
       parent_email: user.email,
       parent_name: user.full_name,
-      playground_name: playgroundName.trim(),
+      playground_name: canonicalName,
       children_names: selectedChildData.map((c) => c.name),
       children_ages: selectedChildData.map((c) => c.age),
       signal_time: new Date().toISOString(),
