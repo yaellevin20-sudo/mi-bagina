@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 
 const STORAGE_KEY = "mi_bagina_user";
 
@@ -14,10 +15,16 @@ export function useLocalUser() {
     }
   }, []);
 
-  const saveUser = (name, phone) => {
+  const saveUser = async (name, phone) => {
     const u = { full_name: name.trim(), phone: phone.trim(), email: phone.trim() };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
     setUser(u);
+    // Also save phone on the Base44 User entity so the WhatsApp agent can find it
+    try {
+      await base44.auth.updateMe({ phone: phone.trim() });
+    } catch (e) {
+      // User might not be logged in via Base44 auth (public app), that's ok
+    }
     return u;
   };
 
