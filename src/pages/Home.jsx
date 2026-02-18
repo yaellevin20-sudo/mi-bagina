@@ -47,6 +47,20 @@ export default function Home() {
         <p className="text-sm text-gray-500 mt-1">מי בגינה היום?</p>
       </div>
 
+      {/* WhatsApp agent banner */}
+      <a
+        href={base44.agents.getWhatsAppConnectURL("park_board_whatsapp")}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-3 bg-[#25D366] text-white rounded-2xl px-4 py-3.5 hover:bg-[#1ebe5d] transition-colors"
+      >
+        <MessageCircle className="w-6 h-6 shrink-0" />
+        <div>
+          <p className="font-semibold text-sm">דווחו דרך וואטסאפ 📲</p>
+          <p className="text-xs opacity-80">שלחו הודעה לבוט ואנחנו נעדכן את הקבוצה</p>
+        </div>
+      </a>
+
       {/* Quick actions */}
       <div className="flex gap-3">
         <Link to={createPageUrl("CreateGroup")} className="flex-1">
