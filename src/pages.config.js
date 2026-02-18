@@ -53,6 +53,7 @@ import ManageChildren from './pages/ManageChildren';
 import CreateGroup from './pages/CreateGroup';
 import JoinGroup from './pages/JoinGroup';
 import MyGroups from './pages/MyGroups';
+import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +64,7 @@ export const PAGES = {
     "CreateGroup": CreateGroup,
     "JoinGroup": JoinGroup,
     "MyGroups": MyGroups,
+    "Profile": Profile,
 }
 
 export const pagesConfig = {
