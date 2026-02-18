@@ -49,7 +49,7 @@ export default function SignalPresenceDialog({ open, onOpenChange, groupId, user
 
     await base44.entities.PlaygroundVisit.create({
       group_id: groupId,
-      parent_email: user.email,
+      parent_email: user.phone,
       parent_name: user.full_name,
       playground_name: canonicalName,
       children_names: selectedChildData.map((c) => c.name),
