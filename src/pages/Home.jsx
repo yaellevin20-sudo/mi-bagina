@@ -49,7 +49,7 @@ export default function Home() {
 
       {/* WhatsApp agent banner */}
       <a
-        href={base44.agents.getWhatsAppConnectURL("park_board_whatsapp")}
+        href={base44.agents.getWhatsAppConnectURL("mi_bagina_whatsapp")}
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-3 bg-[#25D366] text-white rounded-2xl px-4 py-3.5 hover:bg-[#1ebe5d] transition-colors"
