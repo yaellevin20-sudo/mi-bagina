@@ -55,6 +55,16 @@ export default function JoinGroup() {
       user_name: user.full_name,
     });
 
+    // Create a UserPhone record for this group so the WhatsApp agent can find the user by phone
+    const userPhoneRecords = await base44.entities.UserPhone.filter({ email: user.email });
+    const phone = userPhoneRecords.length > 0 ? userPhoneRecords[0].whatsapp_phone : (user.whatsapp_phone || "");
+    await base44.entities.UserPhone.create({
+      email: user.email,
+      whatsapp_phone: phone,
+      full_name: user.display_name || user.full_name || "",
+      group_id: group.id,
+    });
+
     setSuccess(true);
     setTimeout(() => {
       navigate(createPageUrl("GroupView") + `?groupId=${group.id}`);

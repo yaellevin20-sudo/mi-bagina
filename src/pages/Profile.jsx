@@ -89,19 +89,36 @@ export default function Profile() {
     setOriginalName(name.trim());
     setOriginalPhone(whatsappPhone);
 
-    // Also write to queryable UserPhone entity so the WhatsApp agent can find this user by phone
-    const existing = await base44.entities.UserPhone.filter({ email: user.email });
-    if (existing.length > 0) {
-      await base44.entities.UserPhone.update(existing[0].id, {
-        whatsapp_phone: normalizedPhone,
-        full_name: name.trim(),
-      });
+    // Sync UserPhone records (one per group) so the WhatsApp agent can look up this user by phone.
+    // The frontend can query GroupMembership; the agent cannot (it's user-scoped).
+    const [memberships, existingPhoneRecords] = await Promise.all([
+      base44.entities.GroupMembership.filter({ user_email: user.email }),
+      base44.entities.UserPhone.filter({ email: user.email }),
+    ]);
+
+    if (memberships.length > 0) {
+      const membershipGroupIds = new Set(memberships.map((m) => m.group_id));
+      for (const membership of memberships) {
+        const existing = existingPhoneRecords.find((r) => r.group_id === membership.group_id);
+        if (existing) {
+          await base44.entities.UserPhone.update(existing.id, { whatsapp_phone: normalizedPhone, full_name: name.trim() });
+        } else {
+          await base44.entities.UserPhone.create({ email: user.email, whatsapp_phone: normalizedPhone, full_name: name.trim(), group_id: membership.group_id });
+        }
+      }
+      // Remove stale records (left groups or old no-group placeholder)
+      for (const r of existingPhoneRecords) {
+        if (!r.group_id || !membershipGroupIds.has(r.group_id)) {
+          await base44.entities.UserPhone.delete(r.id);
+        }
+      }
     } else {
-      await base44.entities.UserPhone.create({
-        email: user.email,
-        whatsapp_phone: normalizedPhone,
-        full_name: name.trim(),
-      });
+      // Not in any groups yet — upsert a single placeholder so the agent knows the phone is registered
+      if (existingPhoneRecords.length > 0) {
+        await base44.entities.UserPhone.update(existingPhoneRecords[0].id, { whatsapp_phone: normalizedPhone, full_name: name.trim() });
+      } else {
+        await base44.entities.UserPhone.create({ email: user.email, whatsapp_phone: normalizedPhone, full_name: name.trim(), group_id: "" });
+      }
     }
     setSaving(false);
     setSaved(true);

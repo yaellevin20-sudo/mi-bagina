@@ -104,9 +104,15 @@ export default function GroupView() {
   };
 
   const handleLeaveGroup = async () => {
-    const memberships = await base44.entities.GroupMembership.filter({ group_id: groupId, user_email: user.email });
+    const [memberships, phoneRecords] = await Promise.all([
+      base44.entities.GroupMembership.filter({ group_id: groupId, user_email: user.email }),
+      base44.entities.UserPhone.filter({ email: user.email, group_id: groupId }),
+    ]);
     if (memberships.length > 0) {
       await base44.entities.GroupMembership.delete(memberships[0].id);
+    }
+    if (phoneRecords.length > 0) {
+      await base44.entities.UserPhone.delete(phoneRecords[0].id);
     }
     window.location.href = createPageUrl("MyGroups");
   };
