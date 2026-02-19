@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Check } from "lucide-react";
+import { User, Check, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -163,21 +163,24 @@ export default function Profile() {
       </div>
 
       <AlertDialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent dir="rtl" className="max-w-[calc(100vw-2rem)] w-full rounded-2xl p-4">
+          <button
+            onClick={() => { setShowUnsavedDialog(false); setPendingNavigation(null); }}
+            className="absolute left-3 top-3 p-1 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
           <AlertDialogHeader>
-            <AlertDialogTitle>שינויים שלא נשמרו</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base">שינויים שלא נשמרו</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
               יש לכם שינויים שלא נשמרו. מה תרצו לעשות?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row-reverse gap-2">
-            <AlertDialogCancel onClick={() => { setShowUnsavedDialog(false); setPendingNavigation(null); }}>
-              חזרה לעריכה
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleDiscardAndNavigate} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogFooter className="flex-row-reverse gap-2 mt-2">
+            <AlertDialogAction onClick={handleDiscardAndNavigate} className="bg-red-600 hover:bg-red-700 text-sm h-10">
               יציאה בלי לשמור
             </AlertDialogAction>
-            <AlertDialogAction onClick={handleSaveAndNavigate} className="bg-green-600 hover:bg-green-700">
+            <AlertDialogAction onClick={handleSaveAndNavigate} className="bg-green-600 hover:bg-green-700 text-sm h-10">
               שמירה ויציאה
             </AlertDialogAction>
           </AlertDialogFooter>
