@@ -24,7 +24,7 @@ export default function Profile() {
   useEffect(() => {
     base44.auth.me().then((u) => {
       setUser(u);
-      setName(u.full_name || "");
+      setName(u.display_name || u.full_name || "");
       setWhatsappPhone(u.whatsapp_phone || "");
     }).catch(() => base44.auth.redirectToLogin());
   }, []);
@@ -33,7 +33,8 @@ export default function Profile() {
     if (!name.trim()) return;
     setSaving(true);
     const normalizedPhone = normalizeIsraeliPhone(whatsappPhone.trim());
-    await base44.auth.updateMe({ full_name: name.trim(), whatsapp_phone: normalizedPhone });
+    await base44.auth.updateMe({ display_name: name.trim(), whatsapp_phone: normalizedPhone });
+    setUser((prev) => ({ ...prev, display_name: name.trim(), whatsapp_phone: normalizedPhone }));
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -90,7 +91,7 @@ export default function Profile() {
 
         <Button
           onClick={handleSave}
-          disabled={!name.trim() || saving || (name === user.full_name && whatsappPhone === (user.whatsapp_phone || ""))}
+          disabled={!name.trim() || saving || (name === (user.display_name || user.full_name || "") && whatsappPhone === (user.whatsapp_phone || ""))}
           className="w-full h-12 rounded-xl bg-green-600 hover:bg-green-700 text-base font-semibold"
         >
           {saved ? (
