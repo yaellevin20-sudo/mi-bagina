@@ -5,6 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Check } from "lucide-react";
 
+function normalizeIsraeliPhone(raw) {
+  if (!raw) return raw;
+  let digits = raw.replace(/[\s\-().]/g, "");
+  if (digits.startsWith("+")) digits = digits.slice(1);
+  if (digits.startsWith("972") && digits.length >= 11) return digits;
+  if (digits.startsWith("0") && digits.length === 10) return "972" + digits.slice(1);
+  return digits; // unrecognized — pass through
+}
+
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
@@ -23,7 +32,8 @@ export default function Profile() {
   const handleSave = async () => {
     if (!name.trim()) return;
     setSaving(true);
-    await base44.auth.updateMe({ full_name: name.trim(), whatsapp_phone: whatsappPhone.trim() });
+    const normalizedPhone = normalizeIsraeliPhone(whatsappPhone.trim());
+    await base44.auth.updateMe({ full_name: name.trim(), whatsapp_phone: normalizedPhone });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
