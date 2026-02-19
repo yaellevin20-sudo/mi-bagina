@@ -8,6 +8,7 @@ import { User, Check } from "lucide-react";
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
+  const [whatsappPhone, setWhatsappPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -15,13 +16,14 @@ export default function Profile() {
     base44.auth.me().then((u) => {
       setUser(u);
       setName(u.full_name || "");
+      setWhatsappPhone(u.whatsapp_phone || "");
     }).catch(() => base44.auth.redirectToLogin());
   }, []);
 
   const handleSave = async () => {
     if (!name.trim()) return;
     setSaving(true);
-    await base44.auth.updateMe({ full_name: name.trim() });
+    await base44.auth.updateMe({ full_name: name.trim(), whatsapp_phone: whatsappPhone.trim() });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -64,9 +66,21 @@ export default function Profile() {
           <Input value={user.email} disabled className="rounded-xl bg-gray-50 text-gray-400" />
         </div>
 
+        <div>
+          <Label className="text-sm font-medium text-gray-700 mb-1.5 block">מספר וואטסאפ</Label>
+          <Input
+            value={whatsappPhone}
+            onChange={(e) => { setWhatsappPhone(e.target.value); setSaved(false); }}
+            placeholder="למשל: 0541234567"
+            className="rounded-xl"
+            dir="ltr"
+          />
+          <p className="text-xs text-gray-400 mt-1">המספר שמחובר לוואטסאפ שלכם – כדי לקבל עדכוני גינה</p>
+        </div>
+
         <Button
           onClick={handleSave}
-          disabled={!name.trim() || saving || name === user.full_name}
+          disabled={!name.trim() || saving || (name === user.full_name && whatsappPhone === (user.whatsapp_phone || ""))}
           className="w-full h-12 rounded-xl bg-green-600 hover:bg-green-700 text-base font-semibold"
         >
           {saved ? (
