@@ -88,6 +88,21 @@ export default function Profile() {
     setUser((prev) => ({ ...prev, display_name: name.trim(), whatsapp_phone: normalizedPhone }));
     setOriginalName(name.trim());
     setOriginalPhone(whatsappPhone);
+
+    // Also write to queryable UserPhone entity so the WhatsApp agent can find this user by phone
+    const existing = await base44.entities.UserPhone.filter({ email: user.email });
+    if (existing.length > 0) {
+      await base44.entities.UserPhone.update(existing[0].id, {
+        whatsapp_phone: normalizedPhone,
+        full_name: name.trim(),
+      });
+    } else {
+      await base44.entities.UserPhone.create({
+        email: user.email,
+        whatsapp_phone: normalizedPhone,
+        full_name: name.trim(),
+      });
+    }
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
