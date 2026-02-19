@@ -1,9 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Check } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function normalizeIsraeliPhone(raw) {
   if (!raw) return raw;
@@ -20,14 +30,55 @@ export default function Profile() {
   const [whatsappPhone, setWhatsappPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [originalName, setOriginalName] = useState("");
+  const [originalPhone, setOriginalPhone] = useState("");
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then((u) => {
       setUser(u);
-      setName(u.display_name || u.full_name || "");
-      setWhatsappPhone(u.whatsapp_phone || "");
+      const n = u.display_name || u.full_name || "";
+      const p = u.whatsapp_phone || "";
+      setName(n);
+      setWhatsappPhone(p);
+      setOriginalName(n);
+      setOriginalPhone(p);
     }).catch(() => base44.auth.redirectToLogin());
   }, []);
+
+  const hasChanges = useMemo(() => {
+    return name !== originalName || whatsappPhone !== originalPhone;
+  }, [name, whatsappPhone, originalName, originalPhone]);
+
+  // Intercept navigation away when there are unsaved changes
+  useEffect(() => {
+    if (!hasChanges) return;
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    const handleClick = (e) => {
+      const link = e.target.closest("a[href]");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      if (!href || href === "#") return;
+      e.preventDefault();
+      e.stopPropagation();
+      setPendingNavigation(href);
+      setShowUnsavedDialog(true);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("click", handleClick, true);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("click", handleClick, true);
+    };
+  }, [hasChanges]);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -35,9 +86,20 @@ export default function Profile() {
     const normalizedPhone = normalizeIsraeliPhone(whatsappPhone.trim());
     await base44.auth.updateMe({ display_name: name.trim(), whatsapp_phone: normalizedPhone });
     setUser((prev) => ({ ...prev, display_name: name.trim(), whatsapp_phone: normalizedPhone }));
+    setOriginalName(name.trim());
+    setOriginalPhone(whatsappPhone);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleSaveAndNavigate = async () => {
+    await handleSave();
+    if (pendingNavigation) window.location.href = pendingNavigation;
+  };
+
+  const handleDiscardAndNavigate = () => {
+    if (pendingNavigation) window.location.href = pendingNavigation;
   };
 
   if (!user) {
@@ -91,7 +153,7 @@ export default function Profile() {
 
         <Button
           onClick={handleSave}
-          disabled={!name.trim() || saving || (name === (user.display_name || user.full_name || "") && whatsappPhone === (user.whatsapp_phone || ""))}
+          disabled={!name.trim() || saving || !hasChanges}
           className="w-full h-12 rounded-xl bg-green-600 hover:bg-green-700 text-base font-semibold"
         >
           {saved ? (
@@ -99,6 +161,28 @@ export default function Profile() {
           ) : saving ? "שומר..." : "שמירה"}
         </Button>
       </div>
+
+      <AlertDialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>שינויים שלא נשמרו</AlertDialogTitle>
+            <AlertDialogDescription>
+              יש לכם שינויים שלא נשמרו. מה תרצו לעשות?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row-reverse gap-2">
+            <AlertDialogCancel onClick={() => { setShowUnsavedDialog(false); setPendingNavigation(null); }}>
+              חזרה לעריכה
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDiscardAndNavigate} className="bg-red-600 hover:bg-red-700">
+              יציאה בלי לשמור
+            </AlertDialogAction>
+            <AlertDialogAction onClick={handleSaveAndNavigate} className="bg-green-600 hover:bg-green-700">
+              שמירה ויציאה
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
