@@ -1,22 +1,25 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, Share2, Check } from "lucide-react";
+import { MapPin, Share2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import moment from "moment";
 import ActiveBanner from "../components/ActiveBanner";
 import PlaygroundCard from "../components/PlaygroundCard";
 import SignalPresenceDialog from "../components/SignalPresenceDialog";
-import { useLocalUser } from "../components/useLocalUser";
 
 export default function GroupView() {
-  const { user } = useLocalUser();
+  const [user, setUser] = useState(null);
   const [signalOpen, setSignalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
 
   const params = new URLSearchParams(window.location.search);
   const groupId = params.get("groupId");
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin());
+  }, []);
 
   const { data: group } = useQuery({
     queryKey: ["group", groupId],
@@ -34,6 +37,7 @@ export default function GroupView() {
     refetchInterval: 30000,
   });
 
+  // Active visits (< 60 min and not ended)
   const activeVisits = useMemo(() => {
     return visits.filter((v) => {
       const mins = moment().diff(moment(v.signal_time), "minutes");
@@ -41,12 +45,14 @@ export default function GroupView() {
     });
   }, [visits]);
 
+  // Group by playground
   const playgrounds = useMemo(() => {
     const map = {};
     activeVisits.forEach((v) => {
       if (!map[v.playground_name]) map[v.playground_name] = [];
       map[v.playground_name].push(v);
     });
+    // Sort by most recent
     return Object.entries(map).sort(([, a], [, b]) => {
       const latestA = Math.max(...a.map((v) => new Date(v.signal_time).getTime()));
       const latestB = Math.max(...b.map((v) => new Date(v.signal_time).getTime()));
@@ -54,13 +60,16 @@ export default function GroupView() {
     });
   }, [activeVisits]);
 
+  // My active visit
   const myActiveVisit = useMemo(() => {
     if (!user) return null;
-    return activeVisits.find((v) => v.parent_email === user.phone);
+    return activeVisits.find((v) => v.parent_email === user.email);
   }, [activeVisits, user]);
 
+  // Recent playground names for autocomplete
   const recentPlaygrounds = useMemo(() => {
-    return [...new Set(visits.map((v) => v.playground_name))];
+    const names = [...new Set(visits.map((v) => v.playground_name))];
+    return names;
   }, [visits]);
 
   const handleEndVisit = async () => {
@@ -70,7 +79,12 @@ export default function GroupView() {
     }
   };
 
+  const handleChangePlayground = () => {
+    setSignalOpen(true);
+  };
+
   const handleSignaled = async () => {
+    // End any existing active visit first
     if (myActiveVisit) {
       await base44.entities.PlaygroundVisit.update(myActiveVisit.id, { ended: true });
     }
@@ -96,6 +110,7 @@ export default function GroupView() {
 
   return (
     <div className="space-y-5">
+      {/* Group header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">{group.name}</h1>
@@ -111,12 +126,14 @@ export default function GroupView() {
         </button>
       </div>
 
+      {/* My active banner */}
       <ActiveBanner
         visit={myActiveVisit}
         onEnd={handleEndVisit}
-        onChangePlayground={() => setSignalOpen(true)}
+        onChangePlayground={handleChangePlayground}
       />
 
+      {/* Signal button */}
       {!myActiveVisit && (
         <Button
           onClick={() => setSignalOpen(true)}
@@ -127,6 +144,7 @@ export default function GroupView() {
         </Button>
       )}
 
+      {/* Active playgrounds */}
       <div>
         <h2 className="text-base font-bold text-gray-900 mb-3">
           {activeVisits.length > 0
@@ -148,6 +166,7 @@ export default function GroupView() {
         )}
       </div>
 
+      {/* Signal dialog */}
       <SignalPresenceDialog
         open={signalOpen}
         onOpenChange={setSignalOpen}

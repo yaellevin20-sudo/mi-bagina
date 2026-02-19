@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
+import { base44 } from "@/api/base44Client";
 import { Home, Users, Baby, LogOut, Menu, X, User } from "lucide-react";
-import { useLocalUser } from "./components/useLocalUser";
-import IdentitySetup from "./components/IdentitySetup";
+import { Button } from "@/components/ui/button";
 
 export default function Layout({ children, currentPageName }) {
-  const { user, saveUser, clearUser } = useLocalUser();
+  const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => {});
+  }, []);
 
   const navItems = [
     { name: "הבית", page: "Home", icon: Home },
@@ -15,20 +19,6 @@ export default function Layout({ children, currentPageName }) {
     { name: "הילדים שלי", page: "ManageChildren", icon: Baby },
     { name: "הפרופיל שלי", page: "Profile", icon: User },
   ];
-
-  // Loading
-  if (user === undefined) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-emerald-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-green-300 border-t-green-600 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // Not registered yet
-  if (user === null) {
-    return <IdentitySetup onSave={saveUser} />;
-  }
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-b from-green-50 via-white to-emerald-50">
@@ -72,13 +62,15 @@ export default function Layout({ children, currentPageName }) {
                   <span>{item.name}</span>
                 </Link>
               ))}
-              <button
-                onClick={() => { clearUser(); setMenuOpen(false); }}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 w-full transition-all"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>יציאה (שינוי פרטים)</span>
-              </button>
+              {user && (
+                <button
+                  onClick={() => base44.auth.logout()}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 w-full transition-all"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>יציאה</span>
+                </button>
+              )}
             </nav>
           </div>
         )}

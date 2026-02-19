@@ -1,17 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { ArrowLeft, Plus, Users, Link2 } from "lucide-react";
-import { useLocalUser } from "../components/useLocalUser";
 
 export default function MyGroups() {
-  const { user } = useLocalUser();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin());
+  }, []);
 
   const { data: memberships = [] } = useQuery({
-    queryKey: ["memberships", user?.phone],
-    queryFn: () => base44.entities.GroupMembership.filter({ user_email: user.phone }),
+    queryKey: ["memberships", user?.email],
+    queryFn: () => base44.entities.GroupMembership.filter({ user_email: user.email }),
     enabled: !!user,
   });
 
@@ -25,7 +28,13 @@ export default function MyGroups() {
     memberships.some((m) => m.group_id === g.id)
   );
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-green-300 border-t-green-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link2, CheckCircle, AlertCircle } from "lucide-react";
-import { useLocalUser } from "../components/useLocalUser";
 
 export default function JoinGroup() {
-  const { user } = useLocalUser();
+  const [user, setUser] = useState(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -20,11 +19,12 @@ export default function JoinGroup() {
   const preCode = params.get("code");
 
   useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin());
     if (preCode) setCode(preCode);
   }, []);
 
   const handleJoin = async () => {
-    if (!code.trim() || !user) return;
+    if (!code.trim()) return;
     setLoading(true);
     setError("");
 
@@ -41,7 +41,7 @@ export default function JoinGroup() {
     // Check if already a member
     const existing = await base44.entities.GroupMembership.filter({
       group_id: group.id,
-      user_email: user.phone,
+      user_email: user.email,
     });
 
     if (existing.length > 0) {
@@ -51,7 +51,7 @@ export default function JoinGroup() {
 
     await base44.entities.GroupMembership.create({
       group_id: group.id,
-      user_email: user.phone,
+      user_email: user.email,
       user_name: user.full_name,
     });
 

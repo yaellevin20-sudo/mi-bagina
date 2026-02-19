@@ -1,27 +1,39 @@
 import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Check } from "lucide-react";
-import { useLocalUser } from "../components/useLocalUser";
 
 export default function Profile() {
-  const { user, updateUser } = useLocalUser();
+  const [user, setUser] = useState(null);
   const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (user) setName(user.full_name || "");
-  }, [user]);
+    base44.auth.me().then((u) => {
+      setUser(u);
+      setName(u.full_name || "");
+    }).catch(() => base44.auth.redirectToLogin());
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
-    updateUser({ full_name: name.trim() });
+    setSaving(true);
+    await base44.auth.updateMe({ full_name: name.trim() });
+    setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-green-300 border-t-green-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -48,18 +60,18 @@ export default function Profile() {
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-gray-700 mb-1.5 block">מספר טלפון</Label>
-          <Input value={user.phone} disabled className="rounded-xl bg-gray-50 text-gray-400" dir="ltr" />
+          <Label className="text-sm font-medium text-gray-700 mb-1.5 block">אימייל</Label>
+          <Input value={user.email} disabled className="rounded-xl bg-gray-50 text-gray-400" />
         </div>
 
         <Button
           onClick={handleSave}
-          disabled={!name.trim() || name === user.full_name}
+          disabled={!name.trim() || saving || name === user.full_name}
           className="w-full h-12 rounded-xl bg-green-600 hover:bg-green-700 text-base font-semibold"
         >
           {saved ? (
             <span className="flex items-center gap-2"><Check className="w-4 h-4" /> נשמר!</span>
-          ) : "שמירה"}
+          ) : saving ? "שומר..." : "שמירה"}
         </Button>
       </div>
     </div>

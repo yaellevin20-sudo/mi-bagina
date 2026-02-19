@@ -1,22 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Baby } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLocalUser } from "../components/useLocalUser";
 
 export default function ManageChildren() {
-  const { user } = useLocalUser();
+  const [user, setUser] = useState(null);
   const [newName, setNewName] = useState("");
   const [newAge, setNewAge] = useState("");
   const [adding, setAdding] = useState(false);
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin());
+  }, []);
+
   const { data: children = [], isLoading } = useQuery({
-    queryKey: ["children", user?.phone],
-    queryFn: () => base44.entities.Child.filter({ parent_email: user.phone }),
+    queryKey: ["children", user?.email],
+    queryFn: () => base44.entities.Child.filter({ parent_email: user.email }),
     enabled: !!user,
   });
 
@@ -26,7 +29,7 @@ export default function ManageChildren() {
     await base44.entities.Child.create({
       name: newName.trim(),
       age: parseInt(newAge),
-      parent_email: user.phone,
+      parent_email: user.email,
     });
     setNewName("");
     setNewAge("");
@@ -39,7 +42,13 @@ export default function ManageChildren() {
     queryClient.invalidateQueries({ queryKey: ["children"] });
   };
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-green-300 border-t-green-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

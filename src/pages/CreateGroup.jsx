@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
@@ -7,21 +7,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Users } from "lucide-react";
-import { useLocalUser } from "../components/useLocalUser";
 
 function generateCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
 export default function CreateGroup() {
-  const { user } = useLocalUser();
+  const [user, setUser] = useState(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin());
+  }, []);
+
   const handleCreate = async () => {
-    if (!name.trim() || !user) return;
+    if (!name.trim()) return;
     setLoading(true);
 
     const group = await base44.entities.Group.create({
@@ -33,7 +36,7 @@ export default function CreateGroup() {
     // Auto-join the creator
     await base44.entities.GroupMembership.create({
       group_id: group.id,
-      user_email: user.phone,
+      user_email: user.email,
       user_name: user.full_name,
     });
 
