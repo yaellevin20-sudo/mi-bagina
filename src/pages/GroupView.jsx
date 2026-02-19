@@ -1,12 +1,24 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, Share2, Copy, Check } from "lucide-react";
+import { MapPin, Share2, Copy, Check, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import moment from "moment";
 import ActiveBanner from "../components/ActiveBanner";
 import PlaygroundCard from "../components/PlaygroundCard";
 import SignalPresenceDialog from "../components/SignalPresenceDialog";
+import { createPageUrl } from "../utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function GroupView() {
   const [user, setUser] = useState(null);
@@ -91,6 +103,14 @@ export default function GroupView() {
     refetchVisits();
   };
 
+  const handleLeaveGroup = async () => {
+    const memberships = await base44.entities.GroupMembership.filter({ group_id: groupId, user_email: user.email });
+    if (memberships.length > 0) {
+      await base44.entities.GroupMembership.delete(memberships[0].id);
+    }
+    window.location.href = createPageUrl("MyGroups");
+  };
+
   const copyJoinLink = () => {
     if (group?.join_code) {
       const link = `${window.location.origin}${window.location.pathname}#/JoinGroup?code=${group.join_code}`;
@@ -118,12 +138,38 @@ export default function GroupView() {
             <p className="text-sm text-gray-400 mt-0.5">{group.description}</p>
           )}
         </div>
-        <button
-          onClick={copyJoinLink}
-          className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-        >
-          {copied ? <Check className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4 text-gray-500" />}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={copyJoinLink}
+            className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            {copied ? <Check className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4 text-gray-500" />}
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-red-50 transition-colors">
+                <LogOut className="w-4 h-4 text-red-500" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent dir="rtl">
+              <AlertDialogHeader>
+                <AlertDialogTitle>עזיבת קבוצה</AlertDialogTitle>
+                <AlertDialogDescription>
+                  האם אתם בטוחים שברצונכם לעזוב את הקבוצה "{group.name}"?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex-row-reverse gap-2">
+                <AlertDialogCancel>ביטול</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleLeaveGroup}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  עזיבה
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       {/* My active banner */}
