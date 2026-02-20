@@ -105,7 +105,7 @@ export default function GroupView() {
 
   const handleLeaveGroup = async () => {
     const [memberships, phoneRecords] = await Promise.all([
-      base44.entities.GroupMembership.filter({ group_id: groupId, user_email: user.email }),
+      base44.entities.GroupMembership.filter({ group_id: groupId, member_email: user.email }),
       base44.entities.UserPhone.filter({ email: user.email, group_id: groupId }),
     ]);
     if (memberships.length > 0) {

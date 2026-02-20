@@ -41,7 +41,7 @@ export default function JoinGroup() {
     // Check if already a member
     const existing = await base44.entities.GroupMembership.filter({
       group_id: group.id,
-      user_email: user.email,
+      member_email: user.email,
     });
 
     if (existing.length > 0) {
@@ -51,7 +51,7 @@ export default function JoinGroup() {
 
     await base44.entities.GroupMembership.create({
       group_id: group.id,
-      user_email: user.email,
+      member_email: user.email,
       user_name: user.full_name,
     });
 
