@@ -92,7 +92,7 @@ export default function Profile() {
     // Sync UserPhone records (one per group) so the WhatsApp agent can look up this user by phone.
     // The frontend can query GroupMembership; the agent cannot (it's user-scoped).
     const [memberships, existingPhoneRecords] = await Promise.all([
-      base44.entities.GroupMembership.filter({ member_email: user.email }),
+      base44.entities.GroupMembership.filter({ user_email: user.email }),
       base44.entities.UserPhone.filter({ email: user.email }),
     ]);
 

@@ -36,8 +36,8 @@ export default function CreateGroup() {
     // Auto-join the creator
     await base44.entities.GroupMembership.create({
       group_id: group.id,
-      member_email: user.email,
-      user_name: user.full_name,
+      user_email: user.email,
+      user_name: user.display_name || user.full_name || "",
     });
 
     navigate(createPageUrl("GroupView") + `?groupId=${group.id}`);
