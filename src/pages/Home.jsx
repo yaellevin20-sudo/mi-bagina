@@ -10,7 +10,13 @@ export default function Home() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {
+    base44.auth.me().then((u) => {
+      setUser(u);
+      // One-time migration: copy user_email -> member_email on old GroupMembership records
+      base44.entities.GroupMembership.filter({ user_email: u.email }).then((old) => {
+        old.forEach((r) => { if (!r.member_email) base44.entities.GroupMembership.update(r.id, { member_email: u.email }); });
+      }).catch(() => {});
+    }).catch(() => {
       base44.auth.redirectToLogin();
     });
   }, []);
