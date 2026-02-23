@@ -76,28 +76,10 @@ export default function Layout({ children, currentPageName }) {
         )}
       </header>
 
-      {/* Bottom nav for mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-green-100 md:hidden">
-        <div className="max-w-lg mx-auto flex justify-around py-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.page}
-              to={createPageUrl(item.page)}
-              className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all ${
-                currentPageName === item.page
-                  ? "text-green-700"
-                  : "text-gray-400"
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{item.name}</span>
-            </Link>
-          ))}
-        </div>
-      </nav>
+
 
       {/* Content */}
-      <main className="max-w-lg mx-auto px-4 pt-4 pb-24">
+      <main className="max-w-lg mx-auto px-4 pt-4 pb-6">
         {children}
       </main>
     </div>
