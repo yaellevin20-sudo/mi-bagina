@@ -1,0 +1,23 @@
+{
+  "name": "Child",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Child's name"
+    },
+    "age": {
+      "type": "number",
+      "description": "Child's age"
+    },
+    "parent_email": {
+      "type": "string",
+      "description": "Parent's email (owner)"
+    }
+  },
+  "required": [
+    "name",
+    "age",
+    "parent_email"
+  ]
+}

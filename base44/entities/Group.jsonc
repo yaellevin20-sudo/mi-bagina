@@ -1,0 +1,22 @@
+{
+  "name": "Group",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Group name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional group description"
+    },
+    "join_code": {
+      "type": "string",
+      "description": "Unique code for joining"
+    }
+  },
+  "required": [
+    "name",
+    "join_code"
+  ]
+}

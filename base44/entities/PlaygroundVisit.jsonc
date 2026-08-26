@@ -1,0 +1,52 @@
+{
+  "name": "PlaygroundVisit",
+  "type": "object",
+  "properties": {
+    "group_id": {
+      "type": "string",
+      "description": "Which group this visit is scoped to"
+    },
+    "parent_email": {
+      "type": "string",
+      "description": "Parent's email"
+    },
+    "parent_name": {
+      "type": "string",
+      "description": "Parent's display name"
+    },
+    "playground_name": {
+      "type": "string",
+      "description": "Free text playground name"
+    },
+    "children_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of children present"
+    },
+    "children_ages": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Ages of children present"
+    },
+    "signal_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the parent signaled presence"
+    },
+    "ended": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether visit was manually ended"
+    }
+  },
+  "required": [
+    "group_id",
+    "parent_email",
+    "playground_name",
+    "signal_time"
+  ]
+}

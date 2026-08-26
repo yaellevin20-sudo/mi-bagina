@@ -1,0 +1,22 @@
+{
+  "name": "Playground",
+  "type": "object",
+  "properties": {
+    "group_id": {
+      "type": "string",
+      "description": "Which group this playground belongs to"
+    },
+    "canonical_name": {
+      "type": "string",
+      "description": "Normalized canonical playground name"
+    },
+    "raw_text": {
+      "type": "string",
+      "description": "Original raw text as entered (for debugging, not displayed)"
+    }
+  },
+  "required": [
+    "group_id",
+    "canonical_name"
+  ]
+}

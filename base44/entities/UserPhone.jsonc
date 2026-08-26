@@ -1,0 +1,26 @@
+{
+  "name": "UserPhone",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "User's email"
+    },
+    "whatsapp_phone": {
+      "type": "string",
+      "description": "WhatsApp phone number"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "User's full name"
+    },
+    "group_id": {
+      "type": "string",
+      "description": "Group ID"
+    }
+  },
+  "required": [
+    "email",
+    "whatsapp_phone"
+  ]
+}

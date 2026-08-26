@@ -1,0 +1,25 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "whatsapp_phone": {
+      "type": "string",
+      "description": "WhatsApp phone number for linking WhatsApp messages to user account"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Custom display name chosen by the user"
+    }
+  },
+  "required": [
+    "whatsapp_phone"
+  ]
+}
